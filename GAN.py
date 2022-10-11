@@ -97,7 +97,6 @@ class Discriminator(nn.Module):
             
 )
             
-        
 
 
         self.activation = nn.LeakyReLU(0.2)
@@ -108,13 +107,17 @@ class Discriminator(nn.Module):
     def extract_features(self, x):
         h = x.view(-1, 1, 128,128)
         h = self.blocks(x)
+        
+        # use global sum pooling as used in Spectral Normalization Code SN-GAN
+        h = torch.sum(self.activation(h), [2,3])
+        
         output = h.view(-1,1024*4*4)
+        
         return output
 
     def forward(self, x):
       h = self.extract_features(x)
-      # use global sum pooling as used in Spectral Normalization Code SN-GAN
-      # h = torch.sum(self.activation(h), [2,3])
+    
       h = self.linear(h)
       h = h.view(-1)
       return h
