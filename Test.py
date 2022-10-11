@@ -18,9 +18,7 @@ score_list = []
 gt_list, img_list, gt_mask_list = [], [], []
 alpha = 1.0
 with torch.no_grad():
-    with open("./train_score_image_level.csv", "w") as f:
-               f.write("labels, anomaly_score,\n")
-                    
+
     for i, (imgs, labels, _) in enumerate(test_dataloader):
         if torch.cuda.is_available():
 
@@ -46,12 +44,6 @@ with torch.no_grad():
                # residual_list.append(recon_distance.cpu())
 
                 score_list.append(anomaly_score_img.cpu())
-              
-            
-                with open("./train_score_image_level.csv", "a") as f:
-                     f.write(f"{labels.item()},"f"{anomaly_score_img}\n")
-                
-
 
 
 
