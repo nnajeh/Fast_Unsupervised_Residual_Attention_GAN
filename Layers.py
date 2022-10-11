@@ -108,12 +108,11 @@ class DResidualBlock(nn.Module):
       
       
  
-# # Discriminator Residual Block
-# Residual block for the discriminator
-class ResidualConv(nn.Module):
+# # Encoder Residual Block
+class E_ResidualConv(nn.Module):
   def __init__(self, in_channels, out_channels,  preactivation=False,  downsample=None, bn=None):
     
-    super(ResidualConv, self).__init__()
+    super(E_ResidualConv, self).__init__()
     self.in_channels, self.out_channels = in_channels, out_channels
     
     # If using wide D (as in SA-GAN and BigGAN), change the channel pattern
