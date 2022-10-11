@@ -90,8 +90,7 @@ class CBAM(nn.Module):
         super(CBAM, self).__init__()
         self.ChannelGate = ChannelGate(gate_channels, reduction_ratio, pool_types)
         self.no_spatial=no_spatial
-        if not no_spatial:
-            self.SpatialGate = SpatialGate()
+        self.SpatialGate = SpatialGate()
     def forward(self, x):
         x_out = self.ChannelGate(x)
         if not self.no_spatial:
