@@ -107,4 +107,73 @@ class DResidualBlock(nn.Module):
       
       
       
-      
+ 
+# # Discriminator Residual Block
+# Residual block for the discriminator
+class ResidualConv(nn.Module):
+  def __init__(self, in_channels, out_channels,  preactivation=False,  downsample=None, bn=None):
+    
+    super(ResidualConv, self).__init__()
+    self.in_channels, self.out_channels = in_channels, out_channels
+    
+    # If using wide D (as in SA-GAN and BigGAN), change the channel pattern
+   # self.hidden_channels = self.out_channels if wide else self.in_channels
+
+    self.preactivation = preactivation
+    self.activation = nn.ReLU()
+    
+    self.downsample = downsample
+    self.bn = bn
+    self.bn1 = nn.BatchNorm2d(in_channels)
+    self.bn2 = nn.BatchNorm2d(out_channels)
+
+    self.downsample_fn = nn.AvgPool2d(2,2)
+    
+        
+    # Conv layers
+    self.conv1 = nn.utils.spectral_norm(nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1, stride=1, bias=True))
+    
+    self.conv2 = nn.utils.spectral_norm(nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1, stride=1,  bias=True))
+
+    
+    self.learnable_sc = True if (in_channels != out_channels) or self.downsample else False
+    if self.learnable_sc:
+      self.conv_sc = nn.utils.spectral_norm(nn.Conv2d(in_channels, out_channels, kernel_size=1, padding=0))
+    
+    
+  def shortcut(self, x):
+    
+    if self.preactivation:
+      if self.learnable_sc:
+        x = self.conv_sc(x)
+      if self.downsample:
+        x = self.downsample_fn(x)
+        
+    else:  
+      if self.downsample:
+        x = self.downsample_fn(x)
+      if self.learnable_sc:
+        x = self.conv_sc(x)
+    return x
+    
+  def forward(self, x):
+    if self.bn:
+        x = self.bn1(x)
+        
+    if self.preactivation:
+      h = F.relu(x)
+    else:
+      h = x    
+    
+
+    h = self.conv1(h)
+    
+    if self.bn:
+        h = self.bn2(h)
+    h = self.conv2(self.activation(h))
+    
+    if self.downsample:
+      h = self.downsample_fn(h)     
+        
+    return h + self.shortcut(x)
+
