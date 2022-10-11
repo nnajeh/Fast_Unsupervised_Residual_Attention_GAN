@@ -12,7 +12,6 @@ class Generator(nn.Module):
  
         self.proj_z = SNLinear(z_dim, 1024 * 4 ** 2)
  
-        # Can't use one big nn.Sequential since we are adding class+noise at each block
         self.g_blocks = nn.ModuleList([
                 nn.ModuleList([
                     GResidualBlock( 16 * base_channels, 16 * base_channels),
@@ -79,7 +78,7 @@ class Discriminator(nn.Module):
     n_classes: the number of image classes, a scalar
     '''
 
-    def __init__(self, base_channels=64, n_classes=2, channel =3):
+    def __init__(self, base_channels=64, n_classes=2, channel =1):
         super().__init__()
         
 
@@ -89,7 +88,7 @@ class Discriminator(nn.Module):
                 DResidualBlock(1 * base_channels, 2 * base_channels, downsample=True, use_preactivation=True),
                 DResidualBlock(2 * base_channels, 4 * base_channels, downsample=True, use_preactivation=True),
                 DResidualBlock(4 * base_channels, 8 * base_channels, downsample=True, use_preactivation=True),
-                DResidualBlock(8 * base_channels, 8 * base_channels, downsample=True, use_preactivation=True),
+                DResidualBlock(8 * base_channels, 8 * base_channels, downsample=False, use_preactivation=False)
                 DResidualBlock(8 * base_channels, 16 * base_channels, downsample=True, use_preactivation=True),
                 DResidualBlock(16 * base_channels, 16 * base_channels, downsample=False, use_preactivation=True),
 
@@ -101,17 +100,16 @@ class Discriminator(nn.Module):
 
         self.activation = nn.LeakyReLU(0.2)
 
-        self.linear = SNLinear(1024*4*4, 1 )
+        self.linear = SNLinear(1024, 1 )
 
         
     def extract_features(self, x):
-        h = x.view(-1, 1, 128,128)
         h = self.blocks(x)
         
         # use global sum pooling as used in Spectral Normalization Code SN-GAN
         h = torch.sum(self.activation(h), [2,3])
         
-        output = h.view(-1,1024*4*4)
+        output = h.view(-1,1024)
         
         return output
 
