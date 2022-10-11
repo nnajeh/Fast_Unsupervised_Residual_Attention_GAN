@@ -23,14 +23,20 @@ class Generator(nn.Module):
                 
                 nn.ModuleList([
                     GResidualBlock( 8 * base_channels, 8 * base_channels),
+                    CBAM(base_channels),
+
                 ]),
 
                 nn.ModuleList([
                     GResidualBlock(8 * base_channels, 4*base_channels),
+                    CBAM(base_channels),
+
                 ]),
             
                 nn.ModuleList([
                     GResidualBlock(4 * base_channels, 2* base_channels),
+                    CBAM(base_channels),
+
                 ]),               
                  
                 nn.ModuleList([
